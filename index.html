@@ -271,13 +271,10 @@ if('serviceWorker' in navigator){
   .mc-esp{display:block;object-fit:contain;}
   .mc-p .mc-esp{width:3rem;height:3rem;}
   .mc-sbtn .mc-esp{width:2rem;height:2rem;}
-  .mc-fig{line-height:0;display:flex;align-items:center;justify-content:center;}
-  .mc-fig img{height:3.2rem;width:auto;max-width:92%;object-fit:contain;display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.12);}
-  .mc-card.has-fig{gap:3px;}
-  .mc-card.has-fig .mc-glyph{width:1.7rem;height:1.7rem;}
-  .mc-card.has-fig .mc-esp{width:1.7rem;height:1.7rem;}
-  .mc-vbtn-fig{padding:2px 0;}
-  .mc-btnfig{height:2.05rem;width:auto;max-width:100%;object-fit:contain;display:block;margin:0 auto;border-radius:2px;}
+  /* carta de figura: solo la ilustracion, ocupa casi toda la carta (el palo se ve en el dibujo) */
+  .mc-card.has-fig{padding:2px;gap:0;}
+  .mc-fig{flex:1;width:100%;min-height:0;display:flex;align-items:center;justify-content:center;line-height:0;}
+  .mc-fig img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.14);}
 
   .mc-pad{background:#0c0c0c;border-top:4px solid var(--rojo);padding:7px 7px 9px;flex-shrink:0;}
   .res-chart-cap{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:#9A9A9A;font-weight:700;text-align:center;margin-top:2px;}
@@ -384,7 +381,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v3</div>
+    <div class="app-ver">v4</div>
     </div>
 
   </main>
@@ -432,9 +429,9 @@ if('serviceWorker' in navigator){
       <div class="res-ens" id="resEns" style="display:none"></div>
       <div class="res-quad">
         <div class="rq rq-media">
-          <div class="rq-k">Rondas</div>
+          <div class="rq-k">Cartas</div>
           <div class="rq-main" id="rV1">--</div>
-          <div class="rq-k">superadas</div>
+          <div class="rq-k">acertadas</div>
         </div>
         <div class="rq">
           <div class="rq-v" id="rV2">--</div>
@@ -446,7 +443,7 @@ if('serviceWorker' in navigator){
         </div>
         <div class="rq">
           <div class="rq-v" id="rV4">--</div>
-          <div class="rq-k">Cartas acertadas</div>
+          <div class="rq-k">Rondas</div>
         </div>
       </div>
       <div class="res-chart-cap">Reacci&#243;n por carta (s)</div>
@@ -630,15 +627,11 @@ var S={
   lastRec:null, lastRecKey:null, rankKey:null
 };
 
-/* --- botonera --- */
-function padSuit(){ return (S.pendS!=null) ? S.pendS : 0; }
+/* --- botonera (siempre letra/numero; las figuras solo en la carta) --- */
 function buildPad(){
   var vr=$('mcVals'); vr.innerHTML='';
   for(var v=0;v<10;v++){
-    var b=ce('button'); b.className='mc-vbtn'; b.setAttribute('data-v',v);
-    var fsrc=figFor(v, padSuit());
-    if(fsrc){ b.classList.add('mc-vbtn-fig'); b.innerHTML='<img class="mc-btnfig" src="'+fsrc+'" alt="">'; }
-    else { b.textContent=valLabel(v); }
+    var b=ce('button'); b.className='mc-vbtn'; b.setAttribute('data-v',v); b.textContent=valLabel(v);
     (function(vv){ b.addEventListener('click',function(){ onPad('v',vv); }); })(v);
     vr.appendChild(b);
   }
@@ -650,19 +643,10 @@ function buildPad(){
   }
   refreshPad();
 }
-function refreshPadFigs(){
-  var vb=$('mcVals').children, s=padSuit(), i;
-  for(i=0;i<vb.length;i++){
-    if(!vb[i].classList.contains('mc-vbtn-fig')) continue;
-    var img=vb[i].querySelector('img'), src=figFor(i,s);
-    if(img && src && img.getAttribute('src')!==src) img.src=src;
-  }
-}
 function refreshPad(){
   var vb=$('mcVals').children, sb=$('mcSuits').children, i;
   for(i=0;i<vb.length;i++) vb[i].classList.toggle('sel', i===S.pendV);
   for(i=0;i<sb.length;i++) sb[i].classList.toggle('sel', i===S.pendS);
-  refreshPadFigs();
 }
 function setPadLocked(on){
   var p=$('mcPad'); if(p) p.classList.toggle('locked', !!on);
@@ -714,10 +698,11 @@ function faceUp(i){
   var c=cardEl(i); if(!c) return; var card=S.seq[i];
   c.className='mc-card up '+suitClass(card.s);
   var fsrc=figFor(card.v, card.s);
-  var top = fsrc ? '<span class="mc-fig"><img src="'+fsrc+'" alt=""></span>'
-                 : '<span class="mc-n">'+valLabel(card.v)+'</span>';
   c.classList.toggle('has-fig', !!fsrc);
-  c.innerHTML=top+'<span class="mc-p">'+suitSVG(card.s)+'</span>';
+  /* carta de figura = solo la ilustracion (el palo se ve en el propio dibujo) */
+  c.innerHTML = fsrc
+    ? '<span class="mc-fig"><img src="'+fsrc+'" alt=""></span>'
+    : '<span class="mc-n">'+valLabel(card.v)+'</span><span class="mc-p">'+suitSVG(card.s)+'</span>';
 }
 function faceDown(i){ var c=cardEl(i); if(!c) return; c.className='mc-card back'; c.innerHTML=''; }
 function markCur(i,on){ var c=cardEl(i); if(c) c.classList.toggle('cur',!!on); }
@@ -910,11 +895,11 @@ function gameOver(success){
   S.resRounds=(S.modo==='limite') ? (success?1:0) : S.roundsDone;
   S.resOk=(S.modo!=='limite') || success;
 
-  /* principal (rojo, arriba-izq) = RONDAS superadas */
-  $('rV1').textContent=S.resRounds;
+  /* principal (rojo, arriba-izq) = CARTAS ACERTADAS */
+  $('rV1').textContent=S.resCards;
   $('rV2').textContent=(S.resRt/1000).toFixed(2)+' s';
   $('rV3').textContent=fmtTime(S.resTt);
-  $('rV4').textContent=S.resCards;
+  $('rV4').textContent=S.resRounds;
   renderChart(S.rtTimes);
 
   var msg=$('resMsg'), ens=$('resEns');
@@ -954,18 +939,15 @@ document.addEventListener('visibilitychange', function(){
 /* --- ranking --- */
 function lbKey(modo){ return 'rds_mc_'+modo; }
 function loadLb(k){ try{ return JSON.parse(localStorage.getItem(k)||'[]'); }catch(e){ return []; } }
-/* Normal/Extremo: 1o rondas, 2o media de reaccion.  Limite: 1o cartas (N), 2o media. */
-function sortLb(lb, modo){
-  if(modo==='limite') lb.sort(function(a,b){ return ((b.cards||0)-(a.cards||0)) || ((a.rt||0)-(b.rt||0)); });
-  else lb.sort(function(a,b){ return ((b.rounds||0)-(a.rounds||0)) || ((a.rt||0)-(b.rt||0)); });
-}
+/* Todos los modos: 1o nº de cartas acertadas, 2o media de reaccion. */
+function sortLb(lb){ lb.sort(function(a,b){ return ((b.cards||0)-(a.cards||0)) || ((a.rt||0)-(b.rt||0)); }); }
 
 function saveScore(){
   if(!S.resOk) return;
   var nm = S.sport ? (S.name+'-'+S.sport) : S.name;
   var rec={ modo:S.modo, rounds:S.resRounds, cards:S.resCards, rt:Math.round(S.resRt), tt:Math.round(S.resTt), name:nm, ts:Date.now() };
   var k=lbKey(S.modo), lb=loadLb(k);
-  lb.push(rec); sortLb(lb, S.modo); lb=lb.slice(0,50);
+  lb.push(rec); sortLb(lb); lb=lb.slice(0,50);
   try{ localStorage.setItem(k,JSON.stringify(lb)); }catch(e){}
   S.lastRec=rec; S.lastRecKey=k;
   if(window.fbSave){ window.fbSave(rec); }
@@ -993,13 +975,13 @@ function getHomeName(){
   var sport=(sptEl.value||'').trim().toUpperCase();
   return sport ? (nm+'-'+sport) : nm;
 }
-function rankBetter(a,b,modo){
+function rankBetter(a,b){
   if(a==null) return false; if(b==null) return true;
   var ar=(a.rt==null?9e9:a.rt), br=(b.rt==null?9e9:b.rt);
-  if(modo==='limite'){ var ac=a.cards||0, bc=b.cards||0; return ac>bc || (ac===bc && ar<br); }
-  var aR=a.rounds||0, bR=b.rounds||0; return aR>bR || (aR===bR && ar<br);
+  var ac=a.cards||0, bc=b.cards||0;
+  return ac>bc || (ac===bc && ar<br);
 }
-function renderRankList(list, el, modo, latest){
+function renderRankList(list, el, latest){
   list=filterRepeated(list);
   var medals=['gold','silver','bronze'];
   var meName=getHomeName(), myIdx=-1, myEntry=null;
@@ -1017,8 +999,7 @@ function renderRankList(list, el, modo, latest){
     var row=ce('div'); row.className='rank-full-row'+(isMe?' rank-full-me':'')+(isMe&&grey?' me-grey':'');
     var pos=ce('div'); pos.className='rank-full-pos'+(medalIdx>=0&&medalIdx<3?' '+medals[medalIdx]:''); pos.textContent=posLabel;
     var nm=ce('div'); nm.className='rank-full-name'; nm.textContent=entry.name;
-    var primary=(modo==='limite') ? (entry.cards||0) : (entry.rounds||0);
-    var ms=ce('div'); ms.className='rank-full-ms'; ms.textContent=primary+' / '+((entry.rt||0)/1000).toFixed(2);
+    var ms=ce('div'); ms.className='rank-full-ms'; ms.textContent=(entry.cards||0)+' / '+((entry.rt||0)/1000).toFixed(2);
     var dt=ce('div'); dt.className='rank-full-date'; dt.textContent=entry.ts?fmtDate(entry.ts):'';
     row.appendChild(pos); row.appendChild(nm); row.appendChild(ms); row.appendChild(dt);
     return row;
@@ -1034,8 +1015,8 @@ function renderRankList(list, el, modo, latest){
     var shownTs={}; for(var s2=0;s2<display.length;s2++){ if(display[s2].ts!=null) shownTs[display[s2].ts]=1; }
     var bestExtra=(myEntry && myIdx>=15 && myEntry.ts===latest.ts);
     if(!shownTs[latest.ts] && !bestExtra){
-      var lpos=1; for(var q=0;q<list.length;q++){ if(rankBetter(list[q],latest,modo)) lpos++; }
-      var grey=!!(myEntry && myIdx<15 && rankBetter(myEntry,latest,modo));
+      var lpos=1; for(var q=0;q<list.length;q++){ if(rankBetter(list[q],latest)) lpos++; }
+      var grey=!!(myEntry && myIdx<15 && rankBetter(myEntry,latest));
       el.appendChild(buildRow(latest,(lpos>=100?'100+':String(lpos)),-1,true,grey));
     }
   }
@@ -1077,11 +1058,11 @@ function renderRank(modo){
   } else if(S.lastRec && S.lastRecKey===key){
     latest=S.lastRec;
   }
-  var lb=loadLb(key); sortLb(lb, modo);
-  renderRankList(lb, el, modo, latest);
+  var lb=loadLb(key); sortLb(lb);
+  renderRankList(lb, el, latest);
   if(window.fbLoad){
     window.fbLoad(modo).then(function(rows){
-      if(rows && S.rankKey===key){ sortLb(rows, modo); renderRankList(rows, el, modo, latest); }
+      if(rows && S.rankKey===key){ sortLb(rows); renderRankList(rows, el, latest); }
     }).catch(function(){});
   }
 }
