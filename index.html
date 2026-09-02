@@ -248,9 +248,9 @@ if('serviceWorker' in navigator){
   .mc-felt{flex:1;min-height:0;overflow:hidden;position:relative;
     background:radial-gradient(120% 80% at 50% 0%,rgba(255,255,255,0.10),rgba(255,255,255,0) 60%),linear-gradient(180deg,#0c6b3c,#0a5230);}
   .mc-track{display:flex;height:100%;transition:transform 0.35s ease;}
-  .mc-page{flex:0 0 100%;min-width:100%;height:100%;overflow-y:auto;display:grid;grid-template-columns:repeat(5,1fr);
-    grid-auto-rows:min-content;gap:6px 5px;padding:8px;align-content:safe center;}
-  .mc-slot,.mc-card{aspect-ratio:7/10;}
+  .mc-page{flex:0 0 100%;min-width:100%;height:100%;overflow-y:auto;display:grid;grid-template-columns:repeat(4,1fr);
+    grid-auto-rows:calc((100% - 34px)/4);gap:6px 5px;padding:8px;align-content:safe center;}
+  .mc-slot,.mc-card{aspect-ratio:7/10;height:100%;width:auto;margin-inline:auto;}
   .mc-track.deck-fr .mc-slot,.mc-track.deck-fr .mc-card{aspect-ratio:1050/1572;}
   .mc-track.deck-es .mc-slot,.mc-track.deck-es .mc-card{aspect-ratio:722/1122;}
   .mc-slot{border:1.5px dashed rgba(255,255,255,0.22);border-radius:7px;}
@@ -381,7 +381,7 @@ if('serviceWorker' in navigator){
       </select>
     </div>
   </div>
-    <div class="app-ver">v4</div>
+    <div class="app-ver">v5</div>
     </div>
 
   </main>
@@ -665,8 +665,8 @@ function onPad(kind,val){
   refreshPad();
 }
 
-/* --- tablero (paginas de 15: 5 columnas x 3 filas, sin scroll) --- */
-var PER_PAGE = 15;
+/* --- tablero (paginas de 16: 4 columnas x 4 filas, sin scroll) --- */
+var PER_PAGE = 16;
 function renderBoard(){
   var track=$('mcTrack'); track.innerHTML='';
   track.classList.toggle('deck-es', S.baraja==='espanola');
