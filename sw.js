@@ -1,5 +1,5 @@
 /* RDS Memory Cards - Service Worker */
-var CACHE = 'memorycards-v22';
+var CACHE = 'memorycards-v23';
 var ASSETS = [
   './',
   './index.html',
